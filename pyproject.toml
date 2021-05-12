@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "tap-facebook-pages"
+version = "0.0.1"
+description = "`tap-facebook-pages` is Singer-compliant facebook-pages tap built with Singer SDK."
+authors = ["Egi Gjevori <egi.gjevori@y42.com>"]
+license = "Apache v2"
+
+[tool.poetry.dependencies]
+python = ">=3.6,<3.9"
+requests = "^2.25.1"
+# Note: Until we clear the first non-prerelease, `singer-sdk` need to be pinned to a specific version.
+#       For a list of released versions: https://pypi.org/project/singer-sdk/#history
+#       To safely update the version number: `poetry add singer-sdk==0.0.2-dev.1068770959`
+singer-sdk = "0.1.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+# CLI declaration
+tap-facebook-pages = 'tap_facebook_pages.tap:cli'

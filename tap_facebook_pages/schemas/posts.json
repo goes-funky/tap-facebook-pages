@@ -1,0 +1,130 @@
+{
+	"type": [
+		"null",
+		"object"
+	],
+	"properties": {
+		"id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"page_id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"allowed_advertising_objects": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"created_time": {
+			"type": [
+				"null",
+				"string"
+			],
+			"format": "date-time"
+		},
+		"full_picture": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"icon": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"message": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"is_eligible_for_promotion": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_expired": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_hidden": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_instagram_eligible": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_popular": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_published": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_spherical": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"parent_id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"permalink_url": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"place": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"story": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"subscribed": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"updated_time": {
+			"type": [
+				"null",
+				"string"
+			],
+			"format": "date-time"
+		}
+	}
+}

@@ -1,0 +1,338 @@
+{
+	"type": [
+		"null",
+		"object"
+	],
+	"properties": {
+		"id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"about": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"affiliation": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"artists_we_like": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"attire": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"awards": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"band_interests": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"band_members": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"bio": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"birthday": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"booking_agent": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"built": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"can_checkin": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"can_post": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"category": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"checkins": {
+			"type": [
+				"null",
+				"integer"
+			]
+		},
+		"company_overview": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"country_page_likes": {
+			"type": [
+				"null",
+				"integer"
+			]
+		},
+		"culinary_team": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"current_location": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"description": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"directed_by": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"display_subtext": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"features": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"followers_count": {
+			"type": [
+				"null",
+				"integer"
+			]
+		},
+		"founded": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"general_info": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"general_manager": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"genre": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"global_brand_page_name": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"global_brand_root_id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"has_added_app": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"has_whatsapp_business_number": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"has_whatsapp_number": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"hometown": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"influences": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"is_chain": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_community_page": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_eligible_for_branded_content": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_messenger_bot_get_started_enabled": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_messenger_platform_bot": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_owned": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_permanently_closed": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_published": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"is_unclaimed": {
+			"type": [
+				"null",
+				"boolean"
+			]
+		},
+		"link": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"members": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"merchant_review_status": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"mission": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"mpg": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"name": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"network": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"personal_info": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"personal_interests": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"phone": {
+			"type": [
+				"null",
+				"string"
+			]
+		}
+	}
+}

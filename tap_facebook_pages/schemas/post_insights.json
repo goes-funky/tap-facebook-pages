@@ -1,0 +1,75 @@
+{
+	"type": [
+		"null",
+		"object"
+	],
+	"properties": {
+		"name": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"period": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"value": {
+			"type": [
+				"null",
+				"integer"
+			]
+		},
+		"context": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"end_time": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"title": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"description": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"page_id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"post_id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"post_created_time": {
+			"format": "date-time",
+			"type": [
+				"null",
+				"string"
+			]
+		}
+	}
+}

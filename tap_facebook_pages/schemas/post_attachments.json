@@ -1,0 +1,99 @@
+{
+	"type": [
+		"null",
+		"object"
+	],
+	"properties": {
+		"description": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"media": {
+			"type": [
+				"null",
+				"object"
+			],
+			"properties": {
+				"image": {
+					"type": [
+						"null",
+						"object"
+					],
+					"properties": {
+						"height": {
+							"type": [
+								"null",
+								"integer"
+							]
+						},
+						"src": {
+							"type": [
+								"null",
+								"string"
+							]
+						},
+						"width": {
+							"type": [
+								"null",
+								"integer"
+							]
+						}
+					}
+				}
+			}
+		},
+		"target": {
+			"type": [
+				"null",
+				"object"
+			],
+			"properties": {
+				"id": {
+					"type": [
+						"null",
+						"string"
+					]
+				},
+				"url": {
+					"type": [
+						"null",
+						"string"
+					]
+				}
+			}
+		},
+		"type": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"url": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"post_id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"page_id": {
+			"type": [
+				"null",
+				"string"
+			]
+		},
+		"post_created_time": {
+			"format": "date-time",
+			"type": [
+				"null",
+				"string"
+			]
+		}
+	}
+}

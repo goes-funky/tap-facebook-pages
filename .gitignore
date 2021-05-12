@@ -1,0 +1,6 @@
+.idea
+venv
+tap_facebook_pages/tests/__pycache__/
+tap_facebook_pages/__pycache__/
+tap_facebook_pages/__init__.pyc
+
