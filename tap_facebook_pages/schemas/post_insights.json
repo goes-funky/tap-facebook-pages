@@ -19,7 +19,7 @@
 		"value": {
 			"type": [
 				"null",
-				"integer"
+				"number"
 			]
 		},
 		"context": {

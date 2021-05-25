@@ -60,6 +60,12 @@ INSIGHT_STREAMS = [
         "metrics": [
             "page_engaged_users",
             "page_post_engagements",
+        ]
+    },
+    {
+        "class": PageInsights,
+        "name": "page_insight_consumptions",
+        "metrics": [
             "page_consumptions",
             "page_consumptions_unique",
             "page_consumptions_by_consumption_type",
@@ -90,9 +96,6 @@ INSIGHT_STREAMS = [
             "page_negative_feedback_by_type_unique",
             "page_positive_feedback_by_type",
             "page_positive_feedback_by_type_unique",
-            "page_fans_online",
-            "page_fans_online_per_day",
-            "page_fan_adds_by_paid_non_paid_unique",
         ]
     },
     {
@@ -115,6 +118,12 @@ INSIGHT_STREAMS = [
             "page_impressions_paid_unique",
             "page_impressions_organic",
             "page_impressions_organic_unique",
+        ]
+    },
+    {
+        "class": PageInsights,
+        "name": "page_insight_impressions_2",
+        "metrics": [
             "page_impressions_viral",
             "page_impressions_viral_unique",
             "page_impressions_nonviral",
@@ -129,10 +138,16 @@ INSIGHT_STREAMS = [
         "metrics": [
             "page_impressions_by_story_type",
             "page_impressions_by_story_type_unique",
+            "page_impressions_by_age_gender_unique",
+        ]
+    },
+    {
+        "class": PageInsights,
+        "name": "page_insight_impressions_by_location",
+        "metrics": [
             "page_impressions_by_city_unique",
             "page_impressions_by_country_unique",
             "page_impressions_by_locale_unique",
-            "page_impressions_by_age_gender_unique",
         ]
     },
     # page_insight_post
@@ -147,6 +162,12 @@ INSIGHT_STREAMS = [
             "page_posts_impressions_organic",
             "page_posts_impressions_organic_unique",
             "page_posts_served_impressions_organic_unique",
+        ]
+    },
+    {
+        "class": PageInsights,
+        "name": "page_insight_post_2",
+        "metrics": [
             "page_posts_impressions_viral",
             "page_posts_impressions_viral_unique",
             "page_posts_impressions_nonviral",
@@ -178,13 +199,19 @@ INSIGHT_STREAMS = [
             "page_fans_city",
             "page_fans_country",
             "page_fans_gender_age",
+            "page_fans_by_unlike_source_unique",
+        ]
+    },
+    {
+        "class": PageInsights,
+        "name": "page_insight_demographics_2",
+        "metrics": [
             "page_fan_adds",
             "page_fan_adds_unique",
             "page_fans_by_like_source",
             "page_fans_by_like_source_unique",
             "page_fan_removes",
             "page_fan_removes_unique",
-            "page_fans_by_unlike_source_unique",
         ]
     },
     # page_insight_video_views
@@ -196,6 +223,12 @@ INSIGHT_STREAMS = [
             "page_video_views_paid",
             "page_video_views_organic",
             "page_video_views_by_paid_non_paid",
+        ]
+    },
+    {
+        "class": PageInsights,
+        "name": "page_insight_video_views_2",
+        "metrics": [
             "page_video_views_autoplayed",
             "page_video_views_click_to_play",
             "page_video_views_unique",
