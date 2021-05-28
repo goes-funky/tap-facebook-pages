@@ -26,12 +26,14 @@ class FacebookPagesStream(RESTStream):
     access_tokens = {}
     metrics = []
     partitions = []
+    page_id: str
 
     @property
     def url_base(self) -> str:
         return BASE_URL
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
+        self.page_id = partition["page_id"]
         if next_page_token:
             return urllib.parse.parse_qs(urllib.parse.urlparse(next_page_token).query)
 
@@ -88,6 +90,7 @@ class Posts(FacebookPagesStream):
     schema_filepath = SCHEMAS_DIR / "posts.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
+
         params = super().get_url_params(partition, next_page_token)
         if next_page_token:
             return params
@@ -100,6 +103,7 @@ class Posts(FacebookPagesStream):
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         resp_json = response.json()
         for row in resp_json["data"]:
+            row["page_id"] = self.page_id
             yield row
 
 
@@ -124,6 +128,7 @@ class PostTaggedProfile(FacebookPagesStream):
         resp_json = response.json()
         for row in resp_json["data"]:
             parent_info = {
+                "page_id": self.page_id,
                 "post_id": row["id"],
                 "post_created_time": row["created_time"]
             }
@@ -154,6 +159,7 @@ class PostAttachments(FacebookPagesStream):
         resp_json = response.json()
         for row in resp_json["data"]:
             parent_info = {
+                "page_id": self.page_id,
                 "post_id": row["id"],
                 "post_created_time": row["created_time"]
             }
@@ -233,6 +239,7 @@ class PostInsights(FacebookPagesStream):
             for insights in row["insights"]["data"]:
                 base_item = {
                     "post_id": row["id"],
+                    "page_id": self.page_id,
                     "post_created_time": row["created_time"],
                     "name": insights["name"],
                     "period": insights["period"],
