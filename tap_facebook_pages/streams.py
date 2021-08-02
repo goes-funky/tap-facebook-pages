@@ -1,4 +1,5 @@
 """Stream class for tap-facebook-pages."""
+import re
 import sys
 
 import pendulum
@@ -27,6 +28,11 @@ class FacebookPagesStream(RESTStream):
     metrics = []
     partitions = []
     page_id: str
+
+    def prepare_request(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> requests.PreparedRequest:
+        req = super().prepare_request(partition, next_page_token)
+        self.logger.info(re.sub("access_token=[a-zA-Z0-9]+&", "access_token=*****&", urllib.parse.unquote(req.url)))
+        return req
 
     @property
     def url_base(self) -> str:
