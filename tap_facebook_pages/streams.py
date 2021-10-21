@@ -221,7 +221,9 @@ class PageInsights(FacebookPagesStream):
 class PostInsights(FacebookPagesStream):
     name = ""
     tap_stream_id = ""
-    path = "/feed"
+    # use published_posts instead of feed, as the last one is problematic endpoint
+    # path = "/feed"
+    path = "/published_posts"
     primary_keys = ["id"]
     forced_replication_method = "FULL_TABLE"
     schema_filepath = SCHEMAS_DIR / "post_insights.json"
