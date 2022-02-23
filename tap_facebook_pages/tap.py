@@ -28,6 +28,9 @@ STREAM_TYPES = [
     PostTaggedProfile,
 ]
 
+FACEBOOK_API_VERSION = "v10.0"
+ACCOUNTS_URL = "https://graph.facebook.com/{version}/{user_id}/accounts"
+ME_URL = "https://graph.facebook.com/{version}/me".format(version=FACEBOOK_API_VERSION)
 BASE_URL = "https://graph.facebook.com/{page_id}"
 
 session = requests.Session()
@@ -49,29 +52,40 @@ class TapFacebookPages(Tap):
                  parse_env_config: bool = True) -> None:
         super().__init__(config, catalog, state, parse_env_config)
         self.access_tokens = {}
-        for page_id in self.config['page_ids']:
-            self.access_tokens[page_id] = self.exchange_token(page_id, self.config['access_token'])
+        # update partitions and page (id, token) on sync
+        if self.input_catalog:
+            self.get_pages_tokens(self.config['page_ids'], self.config['access_token'])
+            # for page_id in self.config['page_ids']:
+            #     self.access_tokens[page_id] = self.exchange_token(page_id, self.config['access_token'])
 
         self.partitions = [{"page_id": x} for x in self.config["page_ids"]]
 
-    def exchange_token(self, page_id: str, access_token: str):
-        url = BASE_URL.format(page_id=page_id)
-        data = {
-            'fields': 'access_token,name',
-            'access_token': access_token
+    def get_pages_tokens(self, page_ids: list, access_token: str):
+        params = {
+            "access_token": access_token,
         }
+        response = session.get(ME_URL, params=params)
+        response_json = response.json()
 
-        self.logger.info("Exchanging access token for page with id=" + page_id)
-        response = session.get(url=url, params=data)
-        response_data = json.loads(response.text)
         if response.status_code != 200:
-            error_message = "Failed exchanging token: " + response_data["error"]["message"]
-            self.logger.error(error_message)
-            raise RuntimeError(
-                error_message
-            )
-        self.logger.info("Successfully exchanged access token for page with id=" + page_id)
-        return response_data['access_token']
+            raise Exception(response_json["error"]["message"])
+
+        # Request a list of pages with associated tokens
+        params["fields"] = "name,access_token"
+        user_id = response_json["id"]
+        next_page_cursor = True
+        while next_page_cursor:
+            response = session.get(ACCOUNTS_URL.format(version=FACEBOOK_API_VERSION, user_id=user_id), params=params)
+            response_json = response.json()
+            if response.status_code != 200:
+                raise Exception(response_json["error"]["message"])
+
+            next_page_cursor = response_json.get("paging", {}).get("cursors", {}).get("after", False)
+            params["after"] = next_page_cursor
+            for pages in response_json["data"]:
+                page_id = pages["id"]
+                if page_id in page_ids:
+                    self.access_tokens[page_id] = pages["access_token"]
 
     def discover_streams(self) -> List[Stream]:
         streams = []
