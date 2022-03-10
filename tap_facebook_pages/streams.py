@@ -1,11 +1,11 @@
 """Stream class for tap-facebook-pages."""
 import re
 import sys
-
-import pendulum
+import copy
 from pathlib import Path
 from typing import Any, Dict, Optional, Iterable
 from singer_sdk.streams import RESTStream
+
 import urllib.parse
 import requests
 import logging
@@ -29,6 +29,38 @@ class FacebookPagesStream(RESTStream):
     partitions = []
     page_id: str
 
+    def request_records(self, partition: Optional[dict]) -> Iterable[dict]:
+        """Request records from REST endpoint(s), returning response records.
+
+        If pagination is detected, pages will be recursed automatically.
+        """
+        self.logger.info("Reading data for {}".format(partition and partition.get("page_id", False)))
+
+        next_page_token: Any = None
+        finished = False
+        while not finished:
+            prepared_request = self.prepare_request(
+                partition, next_page_token=next_page_token
+            )
+            try:
+                resp = self._request_with_backoff(prepared_request)
+                for row in self.parse_response(resp):
+                    yield row
+                previous_token = copy.deepcopy(next_page_token)
+                next_page_token = self.get_next_page_token(
+                    response=resp, previous_token=previous_token
+                )
+                if next_page_token and next_page_token == previous_token:
+                    raise RuntimeError(
+                        f"Loop detected in pagination. "
+                        f"Pagination token {next_page_token} is identical to prior token."
+                    )
+                # Cycle until get_next_page_token() no longer returns a value
+                finished = not next_page_token
+            except Exception as e:
+                self.logger.warning(e)
+                finished = not next_page_token
+
     def prepare_request(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> requests.PreparedRequest:
         req = super().prepare_request(partition, next_page_token)
         self.logger.info(re.sub("access_token=[a-zA-Z0-9]+&", "access_token=*****&", urllib.parse.unquote(req.url)))
@@ -50,7 +82,11 @@ class FacebookPagesStream(RESTStream):
             start_date_timestamp = int(starting_datetime.timestamp())
             params.update({"since": start_date_timestamp})
 
-        params.update({"access_token": self.access_tokens[partition["page_id"]]})
+        if partition["page_id"] in self.access_tokens:
+            params.update({"access_token": self.access_tokens[partition["page_id"]]})
+        else:
+            self.logger.info("Not enough rights for page: " + partition["page_id"])
+
         params.update({"limit": 100})
         return params
 
@@ -91,7 +127,8 @@ class Posts(FacebookPagesStream):
     tap_stream_id = "posts"
     path = "/posts"
     primary_keys = ["id"]
-    forced_replication_method = "FULL_TABLE"
+    replication_key = ""
+    forced_replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "posts.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -117,7 +154,7 @@ class PostTaggedProfile(FacebookPagesStream):
     tap_stream_id = "post_tagged_profile"
     path = "/posts"
     primary_keys = ["id"]
-    forced_replication_method = "FULL_TABLE"
+    forced_replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "post_tagged_profile.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -147,7 +184,7 @@ class PostAttachments(FacebookPagesStream):
     tap_stream_id = "post_attachments"
     path = "/posts"
     primary_keys = ["id"]
-    forced_replication_method = "FULL_TABLE"
+    forced_replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "post_attachments.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -182,7 +219,7 @@ class PageInsights(FacebookPagesStream):
     tap_stream_id = None
     path = "/insights"
     primary_keys = ["id"]
-    forced_replication_method = "FULL_TABLE"
+    forced_replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "page_insights.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -225,7 +262,7 @@ class PostInsights(FacebookPagesStream):
     # path = "/feed"
     path = "/published_posts"
     primary_keys = ["id"]
-    forced_replication_method = "FULL_TABLE"
+    forced_replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "post_insights.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
