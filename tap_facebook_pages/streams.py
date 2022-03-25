@@ -204,7 +204,7 @@ class PageInsights(FacebookPagesStream):
         resp_json = response.json()
         if "paging" in resp_json and "next" in resp_json["paging"]:
             time = int(t.time())
-            day = int(datetime.timedelta(1).total_seconds())
+            day = int(datetime.timedelta(2).total_seconds())
             params = urllib.parse.parse_qs(urllib.parse.urlparse(resp_json["paging"]["next"]).query)
             since = int(params['since'][0])
             until = int(params['until'][0])
