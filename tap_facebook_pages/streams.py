@@ -1,7 +1,8 @@
 """Stream class for tap-facebook-pages."""
+import datetime
 import re
 import sys
-
+import time as t
 import pendulum
 from pathlib import Path
 from typing import Any, Dict, Optional, Iterable
@@ -187,10 +188,29 @@ class PageInsights(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
+        time = int(t.time())
+        day = int(datetime.timedelta(1).total_seconds())
+        if not next_page_token:
+            until = params['since'] + 8035200
+            params.update({"until": until if until <= time else time-day})
+        else:
+            until = params['until'][0]
+            if int(until) > time:
+                params['until'][0] = str(time-day)
         params.update({"metric": ",".join(self.metrics)})
         return params
 
     def get_next_page_token(self, response: requests.Response, previous_token: Optional[Any] = None) -> Any:
+        resp_json = response.json()
+        if "paging" in resp_json and "next" in resp_json["paging"]:
+            time = int(t.time())
+            day = int(datetime.timedelta(1).total_seconds())
+            params = urllib.parse.parse_qs(urllib.parse.urlparse(resp_json["paging"]["next"]).query)
+            since = int(params['since'][0])
+            until = int(params['until'][0])
+            if since >= time-day or (until >= time and until <= time + day ):
+                return None
+            return resp_json["paging"]["next"]
         return None
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
