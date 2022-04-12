@@ -1,11 +1,8 @@
 """Stream class for tap-facebook-pages."""
+import time as t
 import datetime
 import re
 import sys
-
-import time as t
-import pendulum
-
 import copy
 from pathlib import Path
 from typing import Any, Dict, Optional, Iterable
@@ -101,9 +98,9 @@ class FacebookPagesStream(RESTStream):
             return resp_json["paging"]["next"]
         return None
 
-    def post_process(self, row: dict, stream_or_partition_state: dict) -> dict:
-        if "context" in stream_or_partition_state and "page_id" in stream_or_partition_state["context"]:
-            row["page_id"] = stream_or_partition_state["context"]["page_id"]
+    def post_process(self, row: dict, partition: dict) -> dict:
+        if "page_id" in partition:
+            row["page_id"] = partition["page_id"]
         return row
 
 
@@ -132,8 +129,8 @@ class Posts(FacebookPagesStream):
     tap_stream_id = "posts"
     path = "/posts"
     primary_keys = ["id"]
-    replication_key = ""
-    forced_replication_method = "INCREMENTAL"
+    replication_key = "created_time"
+    replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "posts.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -159,7 +156,8 @@ class PostTaggedProfile(FacebookPagesStream):
     tap_stream_id = "post_tagged_profile"
     path = "/posts"
     primary_keys = ["id"]
-    forced_replication_method = "INCREMENTAL"
+    replication_key = "post_created_time"
+    replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "post_tagged_profile.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -189,7 +187,8 @@ class PostAttachments(FacebookPagesStream):
     tap_stream_id = "post_attachments"
     path = "/posts"
     primary_keys = ["id"]
-    forced_replication_method = "INCREMENTAL"
+    replication_key = "post_created_time"
+    replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "post_attachments.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -224,7 +223,8 @@ class PageInsights(FacebookPagesStream):
     tap_stream_id = None
     path = "/insights"
     primary_keys = ["id"]
-    forced_replication_method = "INCREMENTAL"
+    replication_key = None
+    forced_replication_method = "FULL_TABLE"
     schema_filepath = SCHEMAS_DIR / "page_insights.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -286,7 +286,8 @@ class PostInsights(FacebookPagesStream):
     # path = "/feed"
     path = "/published_posts"
     primary_keys = ["id"]
-    forced_replication_method = "INCREMENTAL"
+    replication_key = "post_created_time"
+    replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "post_insights.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
