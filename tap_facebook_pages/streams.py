@@ -5,8 +5,11 @@ import re
 import sys
 import copy
 from pathlib import Path
-from typing import Any, Dict, Optional, Iterable
+from typing import Any, Dict, Optional, Iterable, cast
 from singer_sdk.streams import RESTStream
+
+import singer
+from singer import metadata
 
 import urllib.parse
 import requests
@@ -102,6 +105,43 @@ class FacebookPagesStream(RESTStream):
         if "page_id" in partition:
             row["page_id"] = partition["page_id"]
         return row
+
+    @property
+    def _singer_metadata(self) -> dict:
+        """Return metadata object (dict) as specified in the Singer spec.
+
+        Metadata from an input catalog will override standard metadata.
+        """
+        if self._tap_input_catalog:
+            catalog = singer.Catalog.from_dict(self._tap_input_catalog)
+            catalog_entry = catalog.get_stream(self.tap_stream_id)
+            if catalog_entry:
+                return cast(dict, catalog_entry.metadata)
+
+        # Fix replication method to pass state
+        md = cast(
+            dict,
+            metadata.get_standard_metadata(
+                schema=self.schema,
+                replication_method=self.replication_method,
+                key_properties=self.primary_keys or None,
+                valid_replication_keys=(
+                    [self.replication_key] if self.replication_key else None
+                ),
+                schema_name=None,
+            ),
+        )
+        return md
+
+    def get_stream_or_partition_state(self, partition: Optional[dict]) -> dict:
+        """Return partition state if applicable; else return stream state."""
+        state = self.stream_state
+        if partition:
+            state = self.get_partition_state(partition)
+
+        if "progress_markers" in state and isinstance(state.get("progress_markers", False), list):
+            state["progress_markers"] = {}
+        return state
 
 
 class Page(FacebookPagesStream):
