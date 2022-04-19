@@ -4,9 +4,12 @@ import datetime
 import re
 import sys
 import copy
+import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Iterable, cast
 from singer_sdk.streams import RESTStream
+import backoff
+import functools
 
 import singer
 from singer import metadata
@@ -22,10 +25,97 @@ logger.setLevel("INFO")
 logger_handler.setFormatter(logging.Formatter('%(levelname)s %(message)s'))
 
 NEXT_FACEBOOK_PAGE = "NEXT_FACEBOOK_PAGE"
-
+MAX_RETRY = 5
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
 BASE_URL = "https://graph.facebook.com/v10.0/{page_id}"
+
+
+def is_status_code_fn(blacklist=None, whitelist=None):
+    def gen_fn(exc):
+        status_code = getattr(exc, 'code', None)
+        if status_code is None:
+            return False
+        status_code = getattr(exc, 'code', None)
+        if status_code is None:
+            return False
+
+        if blacklist is not None and status_code not in blacklist:
+            return True
+
+        if whitelist is not None and status_code in whitelist:
+            return True
+
+        # Retry other errors up to the max
+        return False
+
+    return gen_fn
+
+
+def retry_handler(details):
+    """
+        Customize retrying on Exception by updating until with reduced time
+        (until - since) should be 90 days
+    """
+    # Don't have to wait, just update 'until' param in prepared request
+    details["wait"] = 0
+    args = details["args"]
+    for arg in args:
+        # decompose url in parts - get and update until param
+        if hasattr(arg, "url"):
+            url = args[args.index(arg)].url
+            parsed_url = urllib.parse.urlparse(url)
+            params = urllib.parse.parse_qs(parsed_url.query)
+
+            since, until = params.get("since", False), params.get("until", False)
+            if since and until:
+                days = int(int(until[0]) - int(since[0]) / 2)
+                new_until = int(since[0]) + days  # ** details["tries"]
+                logger.info("Updating time period into %s days", days/86400)  # converted from seconds
+
+                # update timeframe with until
+                url = url.replace(params["until"][0], str(new_until))
+                args[args.index(arg)].url = url
+
+                # 'https://graph.facebook.com/v10.0/100626925472210/published_posts?since=1641787200&access_token=EAAW79ZCLSyFUBANmm1qg6mwFjsjxibIKfPNZBRT3SNZC5MjD5ptObcg47sasiCAwlLIZAvRiONvUyoAjDCrEy7ots3nvmYCZAXXruU6lutUCF4fOvBs79btnJJEZBk2yZAT5JIi90S56hZAEVH9nt9QuVZBsRi527KD0EZBc6StagIQnYZANwVLf9Q8&limit=100&until=1649476800&fields=id%2Ccreated_time%2Cinsights.metric%28post_engaged_users%2Cpost_negative_feedback%2Cpost_negative_feedback_unique%2Cpost_negative_feedback_by_type%2Cpost_negative_feedback_by_type_unique%2Cpost_engaged_fan%2Cpost_clicks%2Cpost_clicks_unique%2Cpost_clicks_by_type%2Cpost_clicks_by_type_unique%29'
+                # 'https://graph.facebook.com/v10.0/100626925472210/published_posts?since=1641787200&access_token=EAAW79ZCLSyFUBAJ0BAFxShZAzZBFTDPCZBwAXOjZCYYTOsC2rkpd3csk774aXtH5ZCZC13GKd4UZBD95cfHC0JOiS0MZBjERmZAnyWkyxIdhSzZAELPPHDGBmTCGKWkKlQzlIyxwo5dmZAZCMSOYhvn0SaCz76Lllp0b25OMtJQRYgwIepGAf1RpVHb0A&limit=100&until=1645632000&fields=id%2Ccreated_time%2Cinsights.metric%28post_engaged_users%2Cpost_negative_feedback%2Cpost_negative_feedback_unique%2Cpost_negative_feedback_by_type%2Cpost_negative_feedback_by_type_unique%2Cpost_engaged_fan%2Cpost_clicks%2Cpost_clicks_unique%2Cpost_clicks_by_type%2Cpost_clicks_by_type_unique%29'
+
+                # Update url for the next call
+                details.update({
+                    'args': args,
+                })
+
+    logger.info("Too many data requested. Retrying with half period -- Retry %s/%s", details['tries'], MAX_RETRY)
+
+
+def error_handler(fnc):
+    @backoff.on_exception(
+        backoff.expo,
+        requests.exceptions.RequestException,
+        max_tries=MAX_RETRY,
+        giveup=lambda e: e.response is not None and 400 <= e.response.status_code < 500,
+        factor=2,
+    )
+    @backoff.on_exception(
+        backoff.expo,
+        TooManyDataRequestedError,
+        on_backoff=retry_handler,
+        max_tries=MAX_RETRY,
+        giveup=is_status_code_fn(blacklist=[500]),
+        jitter=None,
+        max_value=60
+    )
+    @functools.wraps(fnc)
+    def wrapper(*args, **kwargs):
+        return fnc(*args, **kwargs)
+
+    return wrapper
+
+
+class TooManyDataRequestedError(Exception):
+    def __init__(self, msg=None, code=None):
+        Exception.__init__(self, msg)
+        self.code = code
 
 
 class FacebookPagesStream(RESTStream):
@@ -142,6 +232,33 @@ class FacebookPagesStream(RESTStream):
         if "progress_markers" in state and isinstance(state.get("progress_markers", False), list):
             state["progress_markers"] = {}
         return state
+
+    @error_handler
+    def _request_with_backoff(self, prepared_request) -> requests.Response:
+        response = self.requests_session.send(prepared_request)
+        if response.status_code in [401, 403]:
+            self.logger.info("Skipping request to {}".format(prepared_request.url))
+            self.logger.info(
+                f"Reason: {response.status_code} - {str(response.content)}"
+            )
+            raise RuntimeError(
+                "Requested resource was unauthorized, forbidden, or not found."
+            )
+        elif response.status_code >= 400:
+            # retry by changing 'until' param
+            error = json.loads(response.content.decode("utf-8")).get("error", {})
+            if error.get("code", False) == 1 and error.get("error_subcode", ) == 99:
+                message = error.get("message", False) or "Too many data requested"
+                raise TooManyDataRequestedError(message, code=500)
+
+            raise RuntimeError(
+                f"Error making request to API: {prepared_request.url} "
+                f"[{response.status_code} - {str(response.content)}]".replace(
+                    "\\n", "\n"
+                )
+            )
+        logging.debug("Response received successfully.")
+        return response
 
 
 class Page(FacebookPagesStream):
@@ -332,8 +449,15 @@ class PostInsights(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        if next_page_token:
-            return params
+        time = int(t.time())
+        day = int(datetime.timedelta(1).total_seconds())
+        if not next_page_token:
+            until = params['since'] + 7689600  # 8035200
+            params.update({"until": until if until <= time else time-day})
+        else:
+            until = params['until'][0]
+            if int(until) > time:
+                params['until'][0] = str(time-day)
 
         params.update({"fields": "id,created_time,insights.metric(" + ",".join(self.metrics) + ")"})
         return params
