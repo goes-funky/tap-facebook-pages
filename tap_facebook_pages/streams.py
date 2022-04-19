@@ -71,14 +71,11 @@ def retry_handler(details):
             if since and until:
                 days = int(int(until[0]) - int(since[0]) / 2)
                 new_until = int(since[0]) + days  # ** details["tries"]
-                logger.info("Updating time period into %s days", days/86400)  # converted from seconds
+                logger.info("Updating time period into %s days", days / 86400)  # converted from seconds
 
                 # update timeframe with until
                 url = url.replace(params["until"][0], str(new_until))
                 args[args.index(arg)].url = url
-
-                # 'https://graph.facebook.com/v10.0/100626925472210/published_posts?since=1641787200&access_token=EAAW79ZCLSyFUBANmm1qg6mwFjsjxibIKfPNZBRT3SNZC5MjD5ptObcg47sasiCAwlLIZAvRiONvUyoAjDCrEy7ots3nvmYCZAXXruU6lutUCF4fOvBs79btnJJEZBk2yZAT5JIi90S56hZAEVH9nt9QuVZBsRi527KD0EZBc6StagIQnYZANwVLf9Q8&limit=100&until=1649476800&fields=id%2Ccreated_time%2Cinsights.metric%28post_engaged_users%2Cpost_negative_feedback%2Cpost_negative_feedback_unique%2Cpost_negative_feedback_by_type%2Cpost_negative_feedback_by_type_unique%2Cpost_engaged_fan%2Cpost_clicks%2Cpost_clicks_unique%2Cpost_clicks_by_type%2Cpost_clicks_by_type_unique%29'
-                # 'https://graph.facebook.com/v10.0/100626925472210/published_posts?since=1641787200&access_token=EAAW79ZCLSyFUBAJ0BAFxShZAzZBFTDPCZBwAXOjZCYYTOsC2rkpd3csk774aXtH5ZCZC13GKd4UZBD95cfHC0JOiS0MZBjERmZAnyWkyxIdhSzZAELPPHDGBmTCGKWkKlQzlIyxwo5dmZAZCMSOYhvn0SaCz76Lllp0b25OMtJQRYgwIepGAf1RpVHb0A&limit=100&until=1645632000&fields=id%2Ccreated_time%2Cinsights.metric%28post_engaged_users%2Cpost_negative_feedback%2Cpost_negative_feedback_unique%2Cpost_negative_feedback_by_type%2Cpost_negative_feedback_by_type_unique%2Cpost_engaged_fan%2Cpost_clicks%2Cpost_clicks_unique%2Cpost_clicks_by_type%2Cpost_clicks_by_type_unique%29'
 
                 # Update url for the next call
                 details.update({
@@ -389,7 +386,7 @@ class PageInsights(FacebookPagesStream):
         time = int(t.time())
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
-            until = params['since'] + 8035200
+            until = params['since'] + 7689600
             params.update({"until": until if until <= time else time-day})
         else:
             until = params['until'][0]
