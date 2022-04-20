@@ -69,8 +69,9 @@ def retry_handler(details):
 
             since, until = params.get("since", False), params.get("until", False)
             if since and until:
-                days = int(int(until[0]) - int(since[0]) / 2)
-                new_until = int(since[0]) + days  # ** details["tries"]
+                days = int(((int(until[0]) - int(since[0])) / 86400) / 2) * 86400
+                # days = int(int(until[0]) - int(since[0]) / 2)
+                new_until = int(since[0]) + days
                 logger.info("Updating time period into %s days", days / 86400)  # converted from seconds
 
                 # update timeframe with until
