@@ -7,6 +7,8 @@ import copy
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Iterable, cast
+
+import pendulum
 from singer_sdk.streams import RESTStream
 import backoff
 import functools
@@ -55,11 +57,12 @@ def is_status_code_fn(blacklist=None, whitelist=None):
 def retry_handler(details):
     """
         Customize retrying on Exception by updating until with reduced time
-        (until - since) should be 90 days
+        (until - since) should be 90 days [7689600 -> 89 days + since, because since is included]
     """
     # Don't have to wait, just update 'until' param in prepared request
     details["wait"] = 0
     args = details["args"]
+    message = "Too many data requested. "
     for arg in args:
         # decompose url in parts - get and update until param
         if hasattr(arg, "url"):
@@ -67,10 +70,14 @@ def retry_handler(details):
             parsed_url = urllib.parse.urlparse(url)
             params = urllib.parse.parse_qs(parsed_url.query)
 
+            # TODO: hide access token in url when an error message occurs
             since, until = params.get("since", False), params.get("until", False)
-            if since and until:
-                days = int(int(until[0]) - int(since[0]) / 2)
-                new_until = int(since[0]) + days  # ** details["tries"]
+            if since:
+                if not until:
+                    until = [int(since[0]) + 7689600]
+
+                days = int(((int(until[0]) - int(since[0])) / 86400) / 2) * 86400
+                new_until = int(since[0]) + days
                 logger.info("Updating time period into %s days", days / 86400)  # converted from seconds
 
                 # update timeframe with until
@@ -81,8 +88,9 @@ def retry_handler(details):
                 details.update({
                     'args': args,
                 })
+                message += "Retrying with half period"
 
-    logger.info("Too many data requested. Retrying with half period -- Retry %s/%s", details['tries'], MAX_RETRY)
+    logger.info(message + " -- Retry %s/%s", details['tries'], MAX_RETRY)
 
 
 def error_handler(fnc):
@@ -149,11 +157,16 @@ class FacebookPagesStream(RESTStream):
                     )
                 # Cycle until get_next_page_token() no longer returns a value
                 finished = not next_page_token
+
+                if next_page_token == 'True':
+                    next_page_token = False
+
             except Exception as e:
                 self.logger.warning(e)
                 finished = not next_page_token
 
-    def prepare_request(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> requests.PreparedRequest:
+    def prepare_request(self, partition: Optional[dict],
+                        next_page_token: Optional[Any] = None) -> requests.PreparedRequest:
         req = super().prepare_request(partition, next_page_token)
         self.logger.info(re.sub("access_token=[a-zA-Z0-9]+&", "access_token=*****&", urllib.parse.unquote(req.url)))
         return req
@@ -168,7 +181,6 @@ class FacebookPagesStream(RESTStream):
             return urllib.parse.parse_qs(urllib.parse.urlparse(next_page_token).query)
 
         params = {}
-
         starting_datetime = self.get_starting_timestamp(partition)
         if starting_datetime:
             start_date_timestamp = int(starting_datetime.timestamp())
@@ -183,9 +195,36 @@ class FacebookPagesStream(RESTStream):
         return params
 
     def get_next_page_token(self, response: requests.Response, previous_token: Optional[Any] = None) -> Any:
+
+        def check_until(params, next_page=False, stream_state=None):
+            if 'until' in params:
+                time = int(t.time())
+                day = int(datetime.timedelta(2).total_seconds())
+                since = int(params['since'][0])
+                if next_page:
+                    until = int(params['until'][0])
+                    if since >= time - day or (time <= until <= time + day):
+                        return None
+                    return next_page
+                else:
+                    if stream_state:
+                        state_date = stream_state[0]['progress_markers']['replication_key_value']
+                        state_date = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                        # return 'True' to identify there is no next token, but the interation should continue
+                        if since != state_date:
+                            return 'True'
+            return None
+
         resp_json = response.json()
+        # Update: if not page token -> update since & until
+        params = urllib.parse.parse_qs(urllib.parse.urlparse(response.request.url).query)
         if "paging" in resp_json and "next" in resp_json["paging"]:
-            return resp_json["paging"]["next"]
+            params = urllib.parse.parse_qs(urllib.parse.urlparse(resp_json["paging"]["next"]).query)
+            return check_until(params=params, next_page=resp_json["paging"]["next"])
+        else:
+            return check_until(params=params, stream_state=[x for x in self.stream_state['partitions'] if
+                                              x['context']['page_id'] == self.page_id])
+
         return None
 
     def post_process(self, row: dict, partition: dict) -> dict:
@@ -288,10 +327,24 @@ class Posts(FacebookPagesStream):
     schema_filepath = SCHEMAS_DIR / "posts.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
-
         params = super().get_url_params(partition, next_page_token)
-        if next_page_token:
-            return params
+        time = int(t.time())
+        day = int(datetime.timedelta(1).total_seconds())
+        if not next_page_token:
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
+            params.update({"until": until if until <= time else time - day})
+        else:
+            until = params['until'][0]
+            if int(until) > time:
+                params['until'][0] = str(time - day)
 
         fields = ','.join(self.config['columns']) if 'columns' in self.config else ','.join(
             self.schema["properties"].keys())
@@ -316,8 +369,23 @@ class PostTaggedProfile(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        if next_page_token:
-            return params
+        time = int(t.time())
+        day = int(datetime.timedelta(1).total_seconds())
+        if not next_page_token:
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
+            params.update({"until": until if until <= time else time - day})
+        else:
+            until = params['until'][0]
+            if int(until) > time:
+                params['until'][0] = str(time - day)
 
         params.update({"fields": "id,created_time,to"})
         return params
@@ -347,10 +415,26 @@ class PostAttachments(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        if next_page_token:
-            return params
+        time = int(t.time())
+        day = int(datetime.timedelta(1).total_seconds())
+        if not next_page_token:
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
+            params.update({"until": until if until <= time else time - day})
+        else:
+            until = params['until'][0]
+            if int(until) > time:
+                params['until'][0] = str(time - day)
 
         params.update({"fields": "id,created_time,attachments"})
+
         return params
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
@@ -386,27 +470,23 @@ class PageInsights(FacebookPagesStream):
         time = int(t.time())
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
-            until = params['since'] + 7689600
-            params.update({"until": until if until <= time else time-day})
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
+            params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
             if int(until) > time:
-                params['until'][0] = str(time-day)
+                params['until'][0] = str(time - day)
+
         params.update({"metric": ",".join(self.metrics)})
         return params
-
-    def get_next_page_token(self, response: requests.Response, previous_token: Optional[Any] = None) -> Any:
-        resp_json = response.json()
-        if "paging" in resp_json and "next" in resp_json["paging"]:
-            time = int(t.time())
-            day = int(datetime.timedelta(2).total_seconds())
-            params = urllib.parse.parse_qs(urllib.parse.urlparse(resp_json["paging"]["next"]).query)
-            since = int(params['since'][0])
-            until = int(params['until'][0])
-            if since >= time-day or (until >= time and until <= time + day ):
-                return None
-            return resp_json["paging"]["next"]
-        return None
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         resp_json = response.json()
@@ -449,12 +529,20 @@ class PostInsights(FacebookPagesStream):
         time = int(t.time())
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
             until = params['since'] + 7689600  # 8035200
-            params.update({"until": until if until <= time else time-day})
+            params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
             if int(until) > time:
-                params['until'][0] = str(time-day)
+                params['until'][0] = str(time - day)
 
         params.update({"fields": "id,created_time,insights.metric(" + ",".join(self.metrics) + ")"})
         return params
