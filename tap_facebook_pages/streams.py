@@ -331,12 +331,21 @@ class Posts(FacebookPagesStream):
         time = int(t.time())
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
-            until = params['since'] + 7689600
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
             if int(until) > time:
                 params['until'][0] = str(time - day)
+
         fields = ','.join(self.config['columns']) if 'columns' in self.config else ','.join(
             self.schema["properties"].keys())
         params.update({"fields": fields})
@@ -363,12 +372,21 @@ class PostTaggedProfile(FacebookPagesStream):
         time = int(t.time())
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
-            until = params['since'] + 7689600
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
             if int(until) > time:
                 params['until'][0] = str(time - day)
+
         params.update({"fields": "id,created_time,to"})
         return params
 
@@ -400,13 +418,23 @@ class PostAttachments(FacebookPagesStream):
         time = int(t.time())
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
-            until = params['since'] + 7689600
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
             if int(until) > time:
                 params['until'][0] = str(time - day)
+
         params.update({"fields": "id,created_time,attachments"})
+
         return params
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
@@ -442,12 +470,21 @@ class PageInsights(FacebookPagesStream):
         time = int(t.time())
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
-            until = params['since'] + 7689600
+            # check difference between start date and state date. Update since if necessary
+            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
+            if 'progress_markers' in self.stream_state['partitions'][0]:
+                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+                since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
+                if since > params['since']:
+                    params['since'] = since
+
+            until = params['since'] + 7689600  # 8035200
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
             if int(until) > time:
                 params['until'][0] = str(time - day)
+
         params.update({"metric": ",".join(self.metrics)})
         return params
 
