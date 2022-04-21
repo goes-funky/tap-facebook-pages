@@ -205,6 +205,7 @@ class FacebookPagesStream(RESTStream):
                     until = int(params['until'][0])
                     if since >= time - day or (time <= until <= time + day):
                         return None
+                    return next_page
                 else:
                     if stream_state:
                         state_date = stream_state[0]['progress_markers']['replication_key_value']
@@ -219,8 +220,7 @@ class FacebookPagesStream(RESTStream):
         params = urllib.parse.parse_qs(urllib.parse.urlparse(response.request.url).query)
         if "paging" in resp_json and "next" in resp_json["paging"]:
             params = urllib.parse.parse_qs(urllib.parse.urlparse(resp_json["paging"]["next"]).query)
-            check_until(params=params, next_page=True)
-            return resp_json["paging"]["next"]
+            return check_until(params=params, next_page=resp_json["paging"]["next"])
         else:
             return check_until(params=params, stream_state=[x for x in self.stream_state['partitions'] if
                                               x['context']['page_id'] == self.page_id])
