@@ -207,7 +207,7 @@ class FacebookPagesStream(RESTStream):
                         return None
                     return next_page
                 else:
-                    if stream_state:
+                    if stream_state and 'progress_markers' in stream_state[0] and stream_state[0]['progress_markers']:
                         state_date = stream_state[0]['progress_markers']['replication_key_value']
                         state_date = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
                         # return 'True' to identify there is no next token, but the interation should continue
@@ -332,9 +332,9 @@ class Posts(FacebookPagesStream):
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
-            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
-            if 'progress_markers' in self.stream_state['partitions'][0]:
-                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+            state = self.get_stream_or_partition_state({'page_id': self.page_id})
+            if 'progress_markers' in state and state['progress_markers']:
+                state_date = state['progress_markers']['replication_key_value']
                 since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
                 if since > params['since']:
                     params['since'] = since
@@ -373,9 +373,9 @@ class PostTaggedProfile(FacebookPagesStream):
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
-            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
-            if 'progress_markers' in self.stream_state['partitions'][0]:
-                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+            state = self.get_stream_or_partition_state({'page_id': self.page_id})
+            if 'progress_markers' in state and state['progress_markers']:
+                state_date = state['progress_markers']['replication_key_value']
                 since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
                 if since > params['since']:
                     params['since'] = since
@@ -419,9 +419,9 @@ class PostAttachments(FacebookPagesStream):
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
-            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
-            if 'progress_markers' in self.stream_state['partitions'][0]:
-                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+            state = self.get_stream_or_partition_state({'page_id': self.page_id})
+            if 'progress_markers' in state and state['progress_markers']:
+                state_date = state['progress_markers']['replication_key_value']
                 since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
                 if since > params['since']:
                     params['since'] = since
@@ -471,9 +471,9 @@ class PageInsights(FacebookPagesStream):
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
-            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
-            if 'progress_markers' in self.stream_state['partitions'][0]:
-                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+            state = self.get_stream_or_partition_state({'page_id': self.page_id})
+            if 'progress_markers' in state and state['progress_markers']:
+                state_date = state['progress_markers']['replication_key_value']
                 since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
                 if since > params['since']:
                     params['since'] = since
@@ -530,9 +530,9 @@ class PostInsights(FacebookPagesStream):
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
-            # TODO: should stream_state[0] be replaced with the filtered partition - page_id
-            if 'progress_markers' in self.stream_state['partitions'][0]:
-                state_date = self.stream_state['partitions'][0]['progress_markers']['replication_key_value']
+            state = self.get_stream_or_partition_state({'page_id': self.page_id})
+            if 'progress_markers' in state and state['progress_markers']:
+                state_date = state['progress_markers']['replication_key_value']
                 since = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
                 if since > params['since']:
                     params['since'] = since
