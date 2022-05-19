@@ -322,8 +322,10 @@ class Posts(FacebookPagesStream):
     tap_stream_id = "posts"
     path = "/posts"
     primary_keys = ["id"]
-    replication_key = "created_time"
-    replication_method = "INCREMENTAL"
+    # replication_key = "created_time"
+    # replication_method = "INCREMENTAL"
+    replication_key = None
+    forced_replication_method = "FULL_TABLE"
     schema_filepath = SCHEMAS_DIR / "posts.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -363,8 +365,10 @@ class PostTaggedProfile(FacebookPagesStream):
     tap_stream_id = "post_tagged_profile"
     path = "/posts"
     primary_keys = ["id"]
-    replication_key = "post_created_time"
-    replication_method = "INCREMENTAL"
+    # replication_key = "post_created_time"
+    # replication_method = "INCREMENTAL"
+    replication_key = None
+    forced_replication_method = "FULL_TABLE"
     schema_filepath = SCHEMAS_DIR / "post_tagged_profile.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -409,8 +413,10 @@ class PostAttachments(FacebookPagesStream):
     tap_stream_id = "post_attachments"
     path = "/posts"
     primary_keys = ["id"]
-    replication_key = "post_created_time"
-    replication_method = "INCREMENTAL"
+    # replication_key = "post_created_time"
+    # replication_method = "INCREMENTAL"
+    replication_key = None
+    forced_replication_method = "FULL_TABLE"
     schema_filepath = SCHEMAS_DIR / "post_attachments.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
@@ -520,8 +526,10 @@ class PostInsights(FacebookPagesStream):
     # path = "/feed"
     path = "/published_posts"
     primary_keys = ["id"]
-    replication_key = "post_created_time"
-    replication_method = "INCREMENTAL"
+    # replication_key = "post_created_time"
+    # replication_method = "INCREMENTAL"
+    replication_key = None
+    forced_replication_method = "FULL_TABLE"
     schema_filepath = SCHEMAS_DIR / "post_insights.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
