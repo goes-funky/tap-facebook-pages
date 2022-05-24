@@ -198,7 +198,7 @@ class FacebookPagesStream(RESTStream):
 
         def check_until(params, next_page=False, stream_state=None):
             if 'until' in params:
-                time = int(t.time())
+                time = int(t.time()) + 86400  # add one day to the last until time
                 day = int(datetime.timedelta(2).total_seconds())
                 since = int(params['since'][0])
                 if next_page:
@@ -328,7 +328,7 @@ class Posts(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        time = int(t.time())
+        time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
@@ -369,7 +369,7 @@ class PostTaggedProfile(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        time = int(t.time())
+        time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
@@ -415,7 +415,7 @@ class PostAttachments(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        time = int(t.time())
+        time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
@@ -467,7 +467,7 @@ class PageInsights(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        time = int(t.time())
+        time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
@@ -526,7 +526,7 @@ class PostInsights(FacebookPagesStream):
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         params = super().get_url_params(partition, next_page_token)
-        time = int(t.time())
+        time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
             # check difference between start date and state date. Update since if necessary
