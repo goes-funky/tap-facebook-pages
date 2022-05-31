@@ -134,7 +134,7 @@ class TapFacebookPages(Tap):
         stream_objects = self.discover_streams()
         if self.input_catalog:
             selected_streams = []
-            catalog = singer.catalog.Catalog.from_dict(self.input_catalog)
+            catalog = self.input_catalog
             for stream in catalog.streams:
 
                 if stream.is_selected:
