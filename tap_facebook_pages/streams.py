@@ -213,6 +213,8 @@ class FacebookPagesStream(RESTStream):
                         # return 'True' to identify there is no next token, but the interation should continue
                         if since != state_date:
                             return self.paginate(params)
+                    else:
+                        return self.paginate(params)
             return None
 
         resp_json = response.json()
