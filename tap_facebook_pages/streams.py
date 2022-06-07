@@ -212,10 +212,15 @@ class FacebookPagesStream(RESTStream):
                         state_date = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
                         # return 'True' to identify there is no next token, but the interation should continue
                         if since != state_date:
-                            return 'True'
+                            return self.paginate(params)
+                    else:
+                        return self.paginate(params)
             return None
 
         resp_json = response.json()
+        if not resp_json['data']:
+            params = urllib.parse.parse_qs(urllib.parse.urlparse(response.url).query)
+            return self.paginate(params)
         # Update: if not page token -> update since & until
         params = urllib.parse.parse_qs(urllib.parse.urlparse(response.request.url).query)
         if "paging" in resp_json and "next" in resp_json["paging"]:
@@ -226,6 +231,19 @@ class FacebookPagesStream(RESTStream):
                                               x['context']['page_id'] == self.page_id])
 
         return None
+
+    def paginate(self, params):
+        time = int(t.time()) + 86400  # add one day to the last until time
+        day = int(datetime.timedelta(1).total_seconds())
+        params['since'] = params['until']
+        until = int(params['since'][0]) + 7689600  # 8035200
+        since = int(params['since'][0])
+        if until >= int(t.time()):
+            until = int(t.time())
+            if until-since <= day:
+                return None
+        params.update({"until": [str(until)]})
+        return params
 
     def post_process(self, row: dict, partition: dict) -> dict:
         if "page_id" in partition:
@@ -327,7 +345,10 @@ class Posts(FacebookPagesStream):
     schema_filepath = SCHEMAS_DIR / "posts.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
-        params = super().get_url_params(partition, next_page_token)
+        if next_page_token is None or isinstance(next_page_token, str):
+            params = super().get_url_params(partition, next_page_token)
+        else:
+            params = next_page_token
         time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
@@ -368,7 +389,10 @@ class PostTaggedProfile(FacebookPagesStream):
     schema_filepath = SCHEMAS_DIR / "post_tagged_profile.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
-        params = super().get_url_params(partition, next_page_token)
+        if next_page_token is None or isinstance(next_page_token, str):
+            params = super().get_url_params(partition, next_page_token)
+        else:
+            params = next_page_token
         time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
@@ -414,7 +438,10 @@ class PostAttachments(FacebookPagesStream):
     schema_filepath = SCHEMAS_DIR / "post_attachments.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
-        params = super().get_url_params(partition, next_page_token)
+        if next_page_token is None or isinstance(next_page_token, str):
+            params = super().get_url_params(partition, next_page_token)
+        else:
+            params = next_page_token
         time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
@@ -466,7 +493,10 @@ class PageInsights(FacebookPagesStream):
     schema_filepath = SCHEMAS_DIR / "page_insights.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
-        params = super().get_url_params(partition, next_page_token)
+        if next_page_token is None or isinstance(next_page_token, str):
+            params = super().get_url_params(partition, next_page_token)
+        else:
+            params = next_page_token
         time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
@@ -525,7 +555,10 @@ class PostInsights(FacebookPagesStream):
     schema_filepath = SCHEMAS_DIR / "post_insights.json"
 
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
-        params = super().get_url_params(partition, next_page_token)
+        if next_page_token is None or isinstance(next_page_token, str):
+            params = super().get_url_params(partition, next_page_token)
+        else:
+            params = next_page_token
         time = int(t.time()) + 86400  # add one day to the last until time
         day = int(datetime.timedelta(1).total_seconds())
         if not next_page_token:
