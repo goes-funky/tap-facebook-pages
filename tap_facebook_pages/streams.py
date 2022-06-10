@@ -281,7 +281,7 @@ class FacebookPagesStream(RESTStream):
         """Return partition state if applicable; else return stream state."""
         state = self.stream_state
         if partition:
-            state = self.get_partition_state(partition)
+            state = self.get_context_state(partition)
 
         if "progress_markers" in state and isinstance(state.get("progress_markers", False), list):
             state["progress_markers"] = {}
