@@ -33,6 +33,9 @@ SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 BASE_URL = "https://graph.facebook.com/v10.0/{page_id}"
 
 
+def parse_datetime(datetime_str: str) -> pendulum.DateTime:
+    return pendulum.parse(datetime_str)
+
 def is_status_code_fn(blacklist=None, whitelist=None):
     def gen_fn(exc):
         status_code = getattr(exc, 'code', None)
@@ -375,6 +378,7 @@ class Posts(FacebookPagesStream):
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         resp_json = response.json()
         for row in resp_json["data"]:
+            row["created_time"] = parse_datetime(row["created_time"])
             row["page_id"] = self.page_id
             yield row
 
