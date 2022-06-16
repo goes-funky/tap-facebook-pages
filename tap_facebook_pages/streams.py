@@ -425,7 +425,7 @@ class PostTaggedProfile(FacebookPagesStream):
             parent_info = {
                 "page_id": self.page_id,
                 "post_id": row["id"],
-                "post_created_time": row["created_time"]
+                "post_created_time": parse_datetime(row["created_time"])
             }
             if "to" in row:
                 for attachment in row["to"]["data"]:
