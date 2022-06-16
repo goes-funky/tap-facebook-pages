@@ -379,6 +379,7 @@ class Posts(FacebookPagesStream):
         resp_json = response.json()
         for row in resp_json["data"]:
             row["created_time"] = parse_datetime(row["created_time"])
+            row["updated_time"] = parse_datetime(row["updated_time"])
             row["page_id"] = self.page_id
             yield row
 
