@@ -34,7 +34,7 @@ BASE_URL = "https://graph.facebook.com/v10.0/{page_id}"
 
 
 def parse_datetime(datetime_str: str) -> pendulum.DateTime:
-    return pendulum.parse(datetime_str)
+    return pendulum.parse(datetime_str).format("YYYY-MM-DD HH:MM:SS")
 
 def is_status_code_fn(blacklist=None, whitelist=None):
     def gen_fn(exc):
@@ -378,9 +378,7 @@ class Posts(FacebookPagesStream):
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         resp_json = response.json()
         for row in resp_json["data"]:
-            logger.info("UNPARSED", row["created_time"])
             row["created_time"] = parse_datetime(row["created_time"])
-            logger.info("PARSED", row["created_time"])
             row["page_id"] = self.page_id
             yield row
 
