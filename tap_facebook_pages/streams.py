@@ -346,7 +346,7 @@ class Posts(FacebookPagesStream):
     replication_key = "created_time"
     replication_method = "INCREMENTAL"
     schema_filepath = SCHEMAS_DIR / "posts.json"
-
+    logger.info("WAS HERE")
     def get_url_params(self, partition: Optional[dict], next_page_token: Optional[Any] = None) -> Dict[str, Any]:
         if next_page_token is None or isinstance(next_page_token, str):
             params = super().get_url_params(partition, next_page_token)
@@ -378,6 +378,7 @@ class Posts(FacebookPagesStream):
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         resp_json = response.json()
         for row in resp_json["data"]:
+            logger.info("PARSING DATETIME")
             row["created_time"] = parse_datetime(row["created_time"])
             row["page_id"] = self.page_id
             yield row
