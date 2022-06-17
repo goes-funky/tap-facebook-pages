@@ -162,8 +162,8 @@ class FacebookPagesStream(RESTStream):
                     next_page_token = False
 
             except Exception as e:
-                self.logger.warning(e)
-                finished = not next_page_token
+                    self.logger.warning(e)
+                    finished = not next_page_token
 
     def prepare_request(self, partition: Optional[dict],
                         next_page_token: Optional[Any] = None) -> requests.PreparedRequest:
@@ -207,6 +207,7 @@ class FacebookPagesStream(RESTStream):
                         return None
                     return next_page
                 else:
+                    #params.pop("after")
                     if stream_state and 'progress_markers' in stream_state[0] and stream_state[0]['progress_markers']:
                         state_date = stream_state[0]['progress_markers']['replication_key_value']
                         state_date = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
@@ -243,6 +244,8 @@ class FacebookPagesStream(RESTStream):
             if until-since <= day:
                 return None
         params.update({"until": [str(until)]})
+        if "after" in params:
+            del params['after']
         return params
 
     def post_process(self, row: dict, partition: dict) -> dict:
@@ -289,7 +292,7 @@ class FacebookPagesStream(RESTStream):
 
     @error_handler
     def _request_with_backoff(self, prepared_request) -> requests.Response:
-        response = self.requests_session.send(prepared_request)
+        response = self.requests_session.send(prepared_request, proxies={"https": "http://localhost:8866"}, verify=False)
         if response.status_code in [401, 403]:
             self.logger.info("Skipping request to {}".format(prepared_request.url))
             self.logger.info(
