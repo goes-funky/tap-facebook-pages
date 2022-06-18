@@ -292,7 +292,7 @@ class FacebookPagesStream(RESTStream):
 
     @error_handler
     def _request_with_backoff(self, prepared_request) -> requests.Response:
-        response = self.requests_session.send(prepared_request, proxies={"https": "http://localhost:8866"}, verify=False)
+        response = self.requests_session.send(prepared_request)
         if response.status_code in [401, 403]:
             self.logger.info("Skipping request to {}".format(prepared_request.url))
             self.logger.info(
