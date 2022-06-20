@@ -207,6 +207,7 @@ class FacebookPagesStream(RESTStream):
                         return None
                     return next_page
                 else:
+                    #params.pop("after")
                     if stream_state and 'progress_markers' in stream_state[0] and stream_state[0]['progress_markers']:
                         state_date = stream_state[0]['progress_markers']['replication_key_value']
                         state_date = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
@@ -243,6 +244,8 @@ class FacebookPagesStream(RESTStream):
             if until-since <= day:
                 return None
         params.update({"until": [str(until)]})
+        if "after" in params:
+            del params['after']
         return params
 
     def post_process(self, row: dict, partition: dict) -> dict:
