@@ -33,6 +33,9 @@ SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 BASE_URL = "https://graph.facebook.com/v10.0/{page_id}"
 
 
+def parse_datetime(datetime_str: str) -> pendulum.DateTime:
+    return pendulum.parse(datetime_str).format("YYYY-MM-DD HH:MM:SS")
+
 def is_status_code_fn(blacklist=None, whitelist=None):
     def gen_fn(exc):
         status_code = getattr(exc, 'code', None)
@@ -378,6 +381,8 @@ class Posts(FacebookPagesStream):
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
         resp_json = response.json()
         for row in resp_json["data"]:
+            row["created_time"] = parse_datetime(row["created_time"])
+            row["updated_time"] = parse_datetime(row["updated_time"])
             row["page_id"] = self.page_id
             yield row
 
@@ -423,7 +428,7 @@ class PostTaggedProfile(FacebookPagesStream):
             parent_info = {
                 "page_id": self.page_id,
                 "post_id": row["id"],
-                "post_created_time": row["created_time"]
+                "post_created_time": parse_datetime(row["created_time"])
             }
             if "to" in row:
                 for attachment in row["to"]["data"]:
@@ -473,7 +478,7 @@ class PostAttachments(FacebookPagesStream):
             parent_info = {
                 "page_id": self.page_id,
                 "post_id": row["id"],
-                "post_created_time": row["created_time"]
+                "post_created_time": parse_datetime(row["created_time"])
             }
             if "attachments" in row:
                 for attachment in row["attachments"]["data"]:
