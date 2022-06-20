@@ -243,6 +243,8 @@ class FacebookPagesStream(RESTStream):
             if until-since <= day:
                 return None
         params.update({"until": [str(until)]})
+        if "after" in params:
+            del params['after']
         return params
 
     def post_process(self, row: dict, partition: dict) -> dict:
