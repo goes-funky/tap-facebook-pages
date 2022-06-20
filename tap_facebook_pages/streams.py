@@ -162,8 +162,8 @@ class FacebookPagesStream(RESTStream):
                     next_page_token = False
 
             except Exception as e:
-                    self.logger.warning(e)
-                    finished = not next_page_token
+                self.logger.warning(e)
+                finished = not next_page_token
 
     def prepare_request(self, partition: Optional[dict],
                         next_page_token: Optional[Any] = None) -> requests.PreparedRequest:
