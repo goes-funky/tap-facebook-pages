@@ -65,6 +65,8 @@ class TapFacebookPages(Tap):
         response = session.get(url=url, params=data)
         response_data = json.loads(response.text)
         if response.status_code != 200:
+            if response.status_code in (4, 17, 32, 613):
+                self.logger.info("Retry to re-run after 1 hour ...")
             error_message = "Failed exchanging token: " + response_data["error"]["message"]
             self.logger.error(error_message)
             raise RuntimeError(
@@ -93,6 +95,8 @@ class TapFacebookPages(Tap):
             response = session.get(ACCOUNTS_URL.format(version=FACEBOOK_API_VERSION, user_id=user_id), params=params)
             response_json = response.json()
             if response.status_code != 200:
+                if response.status_code in (4, 17, 32, 613):
+                    self.logger.info("Retry to re-run after 1 hour ...")
                 raise Exception(response_json["error"]["message"])
 
             next_page_cursor = response_json.get("paging", {}).get("cursors", {}).get("after", False)
