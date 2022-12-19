@@ -416,6 +416,10 @@ class PostTaggedProfile(FacebookPagesStream):
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
+            since = params['since'][0]
+            difference = (int(until) - int(since))
+            if difference > 8035200:
+                params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
                 params['until'][0] = str(time - day)
 
@@ -520,6 +524,10 @@ class PageInsights(FacebookPagesStream):
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
+            since = params['since'][0]
+            difference = (int(until) - int(since))
+            if difference > 8035200:
+                params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
                 params['until'][0] = str(time - day)
 
@@ -582,6 +590,10 @@ class PostInsights(FacebookPagesStream):
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
+            since = params['since'][0]
+            difference = (int(until) - int(since))
+            if difference > 8035200:
+                params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
                 params['until'][0] = str(time - day)
 
