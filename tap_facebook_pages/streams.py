@@ -143,6 +143,7 @@ class FacebookPagesStream(RESTStream):
                 partition, next_page_token=next_page_token
             )
             try:
+                next_page_token = None
                 resp = self._request_with_backoff(prepared_request)
                 for row in self.parse_response(resp):
                     yield row
