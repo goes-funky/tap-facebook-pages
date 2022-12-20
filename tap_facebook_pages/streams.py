@@ -369,6 +369,8 @@ class Posts(FacebookPagesStream):
             until = params['until'][0]
             since = params['since'][0]
             difference = (int(until) - int(since))
+            # Date range limit is 93 days. Sometimes Facebook api returns a 94 days date range so in this case we had
+            # to handle it.
             if difference > 8035200:
                 params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
@@ -417,6 +419,8 @@ class PostTaggedProfile(FacebookPagesStream):
             until = params['until'][0]
             since = params['since'][0]
             difference = (int(until) - int(since))
+            # Date range limit is 93 days. Sometimes Facebook api returns a 94 days date range so in this case we had
+            # to handle it.
             if difference > 8035200:
                 params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
@@ -470,6 +474,8 @@ class PostAttachments(FacebookPagesStream):
             until = params['until'][0]
             since = params['since'][0]
             difference = (int(until) - int(since))
+            # Date range limit is 93 days. Sometimes Facebook api returns a 94 days date range so in this case we had
+            # to handle it.
             if difference > 8035200:
                 params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
@@ -529,6 +535,8 @@ class PageInsights(FacebookPagesStream):
             until = params['until'][0]
             since = params['since'][0]
             difference = (int(until) - int(since))
+            # Date range limit is 93 days. Sometimes Facebook api returns a 94 days date range so in this case we had
+            # to handle it.
             if difference > 8035200:
                 params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
@@ -594,6 +602,8 @@ class PostInsights(FacebookPagesStream):
         else:
             until = params['until'][0]
             since = params['since'][0]
+            # Date range limit is 93 days. Sometimes Facebook api returns a 94 days date range so in this case we had
+            # to handle it.
             difference = (int(until) - int(since))
             if difference > 8035200:
                 params['until'][0] = int(until) - (difference - 8035200)
