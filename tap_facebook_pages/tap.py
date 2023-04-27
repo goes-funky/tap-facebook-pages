@@ -51,16 +51,8 @@ class TapFacebookPages(Tap):
                  catalog: Union[PurePath, str, dict, None] = None, state: Union[PurePath, str, dict, None] = None,
                  parse_env_config: bool = True) -> None:
         super().__init__(config, catalog, state, parse_env_config)
-        self.access_tokens = {}
-
         # update page access tokens on sync
         page_ids = self.config['page_ids']
-        self.partitions = [{"page_id": x} for x in page_ids]
-        if self.input_catalog:
-            if len(page_ids) > 1:
-                self.get_pages_tokens(page_ids, self.config['access_token'])
-            else:
-                self.access_tokens[page_ids[0]] = self.exchange_token(page_ids[0], self.config['access_token'])
 
     def exchange_token(self, page_id: str, access_token: str):
         url = BASE_URL.format(page_id=page_id)
@@ -119,6 +111,15 @@ class TapFacebookPages(Tap):
 
     def discover_streams(self) -> List[Stream]:
         streams = []
+        # update page access tokens on sync
+        page_ids = self.config['page_ids']
+        self.access_tokens = {}
+        self.partitions = [{"page_id": x} for x in page_ids]
+        if self.input_catalog:
+            if len(page_ids) > 1:
+                self.get_pages_tokens(page_ids, self.config['access_token'])
+            else:
+                self.access_tokens[page_ids[0]] = self.exchange_token(page_ids[0], self.config['access_token'])
         for stream_class in STREAM_TYPES:
             stream = stream_class(tap=self)
             stream.partitions = self.partitions
@@ -138,7 +139,7 @@ class TapFacebookPages(Tap):
         stream_objects = self.discover_streams()
         if self.input_catalog:
             selected_streams = []
-            catalog = singer.catalog.Catalog.from_dict(self.input_catalog)
+            catalog = self.input_catalog
             for stream in catalog.streams:
 
                 if stream.is_selected:
