@@ -169,7 +169,7 @@ class FacebookPagesStream(RESTStream):
     def prepare_request(self, partition: Optional[dict],
                         next_page_token: Optional[Any] = None) -> requests.PreparedRequest:
         req = super().prepare_request(partition, next_page_token)
-        self.logger.info(re.sub("access_token=[a-zA-Z0-9]+&", "access_token=*****&", urllib.parse.unquote(req.url)))
+        # self.logger.info(re.sub("access_token=[a-zA-Z0-9]+&", "access_token=*****&", urllib.parse.unquote(req.url)))
         return req
 
     @property
@@ -208,7 +208,6 @@ class FacebookPagesStream(RESTStream):
                         return None
                     return next_page
                 else:
-                    #params.pop("after")
                     if stream_state and 'progress_markers' in stream_state[0] and stream_state[0]['progress_markers']:
                         state_date = stream_state[0]['progress_markers']['replication_key_value']
                         state_date = int(cast(datetime.datetime, pendulum.parse(state_date)).timestamp())
@@ -285,7 +284,7 @@ class FacebookPagesStream(RESTStream):
         """Return partition state if applicable; else return stream state."""
         state = self.stream_state
         if partition:
-            state = self.get_partition_state(partition)
+            state = self.get_context_state(partition)
 
         if "progress_markers" in state and isinstance(state.get("progress_markers", False), list):
             state["progress_markers"] = {}
@@ -295,7 +294,7 @@ class FacebookPagesStream(RESTStream):
     def _request_with_backoff(self, prepared_request) -> requests.Response:
         response = self.requests_session.send(prepared_request)
         if response.status_code in [401, 403]:
-            self.logger.info("Skipping request to {}".format(prepared_request.url))
+            # self.logger.info("Skipping request to {}".format(prepared_request.url))
             self.logger.info(
                 f"Reason: {response.status_code} - {str(response.content)}"
             )
@@ -469,6 +468,10 @@ class PostAttachments(FacebookPagesStream):
             params.update({"until": until if until <= time else time - day})
         else:
             until = params['until'][0]
+            since = params['since'][0]
+            difference = (int(until) - int(since))
+            if difference > 8035200:
+                params['until'][0] = int(until) - (difference - 8035200)
             if int(until) > time:
                 params['until'][0] = str(time - day)
 
