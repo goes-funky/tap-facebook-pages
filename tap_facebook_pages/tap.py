@@ -28,7 +28,7 @@ STREAM_TYPES = [
     PostTaggedProfile,
 ]
 
-FACEBOOK_API_VERSION = "v12.0"
+FACEBOOK_API_VERSION = "v18.0"
 ACCOUNTS_URL = "https://graph.facebook.com/{version}/{user_id}/accounts"
 ME_URL = "https://graph.facebook.com/{version}/me".format(version=FACEBOOK_API_VERSION)
 BASE_URL = "https://graph.facebook.com/{page_id}"

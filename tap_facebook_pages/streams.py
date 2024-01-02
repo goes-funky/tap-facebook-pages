@@ -30,7 +30,7 @@ NEXT_FACEBOOK_PAGE = "NEXT_FACEBOOK_PAGE"
 MAX_RETRY = 5
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
-BASE_URL = "https://graph.facebook.com/v12.0/{page_id}"
+BASE_URL = "https://graph.facebook.com/v18.0/{page_id}"
 
 
 def is_status_code_fn(blacklist=None, whitelist=None):
