@@ -13,44 +13,21 @@ INSIGHT_STREAMS = [
         "metrics": [
             "page_total_actions",
             "page_cta_clicks_logged_in_total",
-            "page_cta_clicks_logged_in_unique",
-            "page_cta_clicks_by_site_logged_in_unique",
-            "page_cta_clicks_by_age_gender_logged_in_unique",
-            "page_cta_clicks_logged_in_by_country_unique",
-            "page_cta_clicks_logged_in_by_city_unique",
-        ]
-    },
-    {
-        "class": PageInsights,
-        "name": "page_insight_call_phone_clicks",
-        "metrics": [
-            "page_call_phone_clicks_logged_in_unique",
-            "page_call_phone_clicks_by_age_gender_logged_in_unique",
-            "page_call_phone_clicks_logged_in_by_country_unique",
-            "page_call_phone_clicks_logged_in_by_city_unique",
-            "page_call_phone_clicks_by_site_logged_in_unique",
+            "page_cta_clicks_logged_in_unique"
         ]
     },
     {
         "class": PageInsights,
         "name": "page_insight_get_directions_clicks",
         "metrics": [
-            "page_get_directions_clicks_logged_in_unique",
-            "page_get_directions_clicks_by_age_gender_logged_in_unique",
-            "page_get_directions_clicks_logged_in_by_country_unique",
-            "page_get_directions_clicks_logged_in_by_city_unique",
-            "page_get_directions_clicks_by_site_logged_in_unique",
+            "page_get_directions_clicks_logged_in_unique"
         ]
     },
     {
         "class": PageInsights,
         "name": "page_insight_website_clicks",
         "metrics": [
-            "page_website_clicks_logged_in_unique",
-            "page_website_clicks_by_age_gender_logged_in_unique",
-            "page_website_clicks_logged_in_by_country_unique",
-            "page_website_clicks_logged_in_by_city_unique",
-            "page_website_clicks_by_site_logged_in_unique",
+            "page_website_clicks_logged_in_unique"
         ]
     },
     # page_insight_engagement
@@ -58,7 +35,6 @@ INSIGHT_STREAMS = [
         "class": PageInsights,
         "name": "page_insight_engagement",
         "metrics": [
-            "page_engaged_users",
             "page_post_engagements",
         ]
     },
@@ -66,7 +42,6 @@ INSIGHT_STREAMS = [
         "class": PageInsights,
         "name": "page_insight_consumptions",
         "metrics": [
-            "page_consumptions",
             "page_consumptions_unique",
             "page_consumptions_by_consumption_type",
             "page_consumptions_by_consumption_type_unique",
@@ -77,12 +52,7 @@ INSIGHT_STREAMS = [
         "name": "page_insight_places_checkin",
         "metrics": [
             "page_places_checkin_total",
-            "page_places_checkin_total_unique",
-            "page_places_checkin_mobile",
-            "page_places_checkin_mobile_unique",
-            "page_places_checkins_by_age_gender",
-            "page_places_checkins_by_locale",
-            "page_places_checkins_by_country",
+            "page_places_checkin_total_unique"
 
         ]
     },
@@ -93,9 +63,7 @@ INSIGHT_STREAMS = [
             "page_negative_feedback",
             "page_negative_feedback_unique",
             "page_negative_feedback_by_type",
-            "page_negative_feedback_by_type_unique",
-            "page_positive_feedback_by_type",
-            "page_positive_feedback_by_type_unique",
+            "page_negative_feedback_by_type_unique"
         ]
     },
     {
@@ -128,7 +96,6 @@ INSIGHT_STREAMS = [
             "page_impressions_viral_unique",
             "page_impressions_nonviral",
             "page_impressions_nonviral_unique",
-            "page_impressions_frequency_distribution",
             "page_impressions_viral_frequency_distribution",
         ]
     },
@@ -171,8 +138,7 @@ INSIGHT_STREAMS = [
             "page_posts_impressions_viral",
             "page_posts_impressions_viral_unique",
             "page_posts_impressions_nonviral",
-            "page_posts_impressions_nonviral_unique",
-            "page_posts_impressions_frequency_distribution",
+            "page_posts_impressions_nonviral_unique"
         ]
     },
     # page_insight_reactions
@@ -197,9 +163,7 @@ INSIGHT_STREAMS = [
             "page_fans",
             "page_fans_locale",
             "page_fans_city",
-            "page_fans_country",
-            "page_fans_gender_age",
-            "page_fans_by_unlike_source_unique",
+            "page_fans_country"
         ]
     },
     {
@@ -208,8 +172,6 @@ INSIGHT_STREAMS = [
         "metrics": [
             "page_fan_adds",
             "page_fan_adds_unique",
-            "page_fans_by_like_source",
-            "page_fans_by_like_source_unique",
             "page_fan_removes",
             "page_fan_removes_unique",
         ]
@@ -272,23 +234,7 @@ INSIGHT_STREAMS = [
         "class": PageInsights,
         "name": "page_insight_views",
         "metrics": [
-            "page_views_total",
-            "page_views_logout",
-            "page_views_logged_in_total",
-            "page_views_logged_in_unique",
-            "page_views_external_referrals",
-        ]
-    },
-    {
-        "class": PageInsights,
-        "name": "page_insight_views_by_category",
-        "metrics": [
-            "page_views_by_profile_tab_total",
-            "page_views_by_profile_tab_logged_in_unique",
-            "page_views_by_internal_referer_logged_in_unique",
-            "page_views_by_site_logged_in_unique",
-            "page_views_by_age_gender_logged_in_unique",
-            "page_views_by_referers_logged_in_unique",
+            "page_views_total"
         ]
     },
     # page_insight_video_ad_break
@@ -331,8 +277,6 @@ INSIGHT_STREAMS = [
             "post_impressions_paid_unique",
             "post_impressions_fan",
             "post_impressions_fan_unique",
-            "post_impressions_fan_paid",
-            "post_impressions_fan_paid_unique",
             "post_impressions_organic",
             "post_impressions_organic_unique",
             "post_impressions_viral",
@@ -428,8 +372,6 @@ INSIGHT_STREAMS = [
         "class": PostInsights,
         "name": "post_insight_activity",
         "metrics": [
-            "post_activity",
-            "post_activity_unique",
             "post_activity_by_action_type",
             "post_activity_by_action_type_unique",
         ]
